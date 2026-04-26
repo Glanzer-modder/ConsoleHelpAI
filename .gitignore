@@ -1,0 +1,40 @@
+# Build output
+build/
+out/
+bin/
+obj/
+.vs/
+
+# CMake
+CMakeUserPresets.json
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+
+# Generated dist output under build
+**/dist/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.aps
+
+# Compiled output
+*.dll
+*.pdb
+*.exp
+*.lib
+*.ilk
+
+# Logs and local secrets
+*.log
+*.tmp
+*.bak
+/local/
+secrets/
+.env
+
+# Don't commit personal API key
+dist/SKSE/Plugins/ConsoleHelpAI_Key.ini
