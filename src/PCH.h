@@ -3,6 +3,7 @@
 #include <RE/Skyrim.h>
 #include <SKSE/SKSE.h>
 #include <SKSE/Logger.h>
+#include <ShlObj.h>
 
 #pragma warning(push)
 #include <spdlog/sinks/basic_file_sink.h>

@@ -23,13 +23,40 @@ namespace
 
     void InitializeLogging()
     {
-        auto path = logger::log_directory();
-        if (!path) {
-            SKSE::stl::report_and_fail("Unable to find standard logging directory.");
+        // Determine the correct documents folder name based on which
+        // platform DLLs are present, matching the approach used by
+        // MediaKeysFix to avoid Address Library lookup issues on AE.
+        PWSTR buf{ nullptr };
+        ::SHGetKnownFolderPath(::FOLDERID_Documents, KF_FLAG_DEFAULT, nullptr, &buf);
+        std::unique_ptr<wchar_t, decltype(&::CoTaskMemFree)> documentsPath{ buf, ::CoTaskMemFree };
+
+        if (!documentsPath) {
+            SKSE::stl::report_and_fail("Unable to find documents folder.");
         }
 
-        *path /= std::format("{}.log", Plugin::NAME);
-        auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path->string(), true);
+        std::filesystem::path path{ documentsPath.get() };
+        path /= "My Games"sv;
+
+        if SKYRIM_REL_VR_CONSTEXPR(REL::Module::IsVR()) {
+            path /= "Skyrim VR"sv;
+        }
+        else if (std::filesystem::exists("steam_api64.dll"sv)) {
+            path /= "Skyrim Special Edition"sv;
+        }
+        else if (std::filesystem::exists("Galaxy64.dll"sv)) {
+            path /= "Skyrim Special Edition GOG"sv;
+        }
+        else if (std::filesystem::exists("eossdk-win64-shipping.dll"sv)) {
+            path /= "Skyrim Special Edition EPIC"sv;
+        }
+        else {
+            path /= "Skyrim Special Edition"sv;  // safe fallback
+        }
+
+        path /= "SKSE"sv;
+        path /= std::format("{}.log", Plugin::NAME);
+
+        auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path.string(), true);
         auto log = std::make_shared<spdlog::logger>("global log", std::move(sink));
 
         log->set_level(spdlog::level::info);
@@ -59,6 +86,12 @@ extern "C" __declspec(dllexport) bool SKSEPlugin_Query(
     SKSE::PluginInfo* a_info)
 {
     if (!a_skse || !a_info) {
+        return false;
+    }
+
+    // Prevent loading in the Creation Kit
+    if (a_skse->IsEditor()) {
+        logger::critical("Loaded in editor, marking as incompatible.");
         return false;
     }
 
