@@ -1,4 +1,4 @@
-# ConsoleHelpAI
+# Console Help AI
 
 This SKSE plugin intercepts console input with a prefix such as `ai:` and sends the remainder of the line to an AI API. This allows users to query AI for console commands, NPCs, location info, etc.
 
